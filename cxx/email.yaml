@@ -1,0 +1,8 @@
+email-server:
+  # your email server,e.g. smtp.163.com
+  server: smtp.163.com
+  # your email server port 
+  port: 465
+  sender:
+    address: xxxx@163.com
+    password: xxxx
