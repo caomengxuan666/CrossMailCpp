@@ -1,8 +1,8 @@
-#include "../cxx/email.h"
+#include "../CrossMailCpp/smtp.h"
 
 int main() {
     // 创建 EmailWrapper 实例
-    EmailWrapper email_wrapper;
+    EmailWrapper email_wrapper("email.yaml", 10);
 
     // 硬编码 HTML 内容
     std::string hard_coded_html = R"(
@@ -21,16 +21,17 @@ int main() {
         )";
 
     // 收件人信息
-    std::string recipient = "xxxxx@qq.com";
+    std::string recipient = "xxx@qq.com";
     std::string title = "HTML测试邮件";
 
     try {
         // 设置硬编码的 HTML 内容
         std::string html_content = email_wrapper.set_html_content(hard_coded_html);
-
         // 发送邮件
         email_wrapper.send_email(recipient, html_content, title);
         std::cout << "邮件发送成功！" << std::endl;
+    } catch (const EmailException &e) {
+        std::cerr << "邮件操作失败: " << e.what() << std::endl;
     } catch (const std::exception &e) {
         std::cerr << "发生错误: " << e.what() << std::endl;
     }

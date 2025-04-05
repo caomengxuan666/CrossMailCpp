@@ -35,14 +35,14 @@ include_directories(${Python3_INCLUDE_DIRS})
 find_package(pybind11 REQUIRED)
 
 # 拷贝python文件夹下的所有.py文件
-file(GLOB PYTHON_FILES "cxx/python/*.py")
+file(GLOB PYTHON_FILES "CrossMailCpp/python/*.py")
 file(COPY ${PYTHON_FILES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 # 拷贝cxx目录下的所有文件
-file(GLOB CXX_FILES "cxx/*.yaml")
+file(GLOB CXX_FILES "CrossMailCpp/*.yaml")
 file(COPY ${CXX_FILES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
-aux_source_directory(cxx CXX_SRC)
+aux_source_directory(CrossMailCpp CXX_SRC)
 
 add_executable(emailexample example/sendemail.cxx)
 
