@@ -3,9 +3,14 @@
 #include <pybind11/embed.h>
 #include <pybind11/pybind11.h>
 #include <sstream>
-#include <unistd.h> // 用于获取可执行文件路径
-#include <limits.h> // PATH_MAX 定义
 #include <stdexcept> // 标准异常库
+
+#ifdef _WIN32
+#include <windows.h> // Windows API
+#else
+#include <unistd.h>  // readlink
+#include <limits.h>  // PATH_MAX
+#endif
 
 namespace py = pybind11;
 
@@ -33,19 +38,36 @@ public:
     }
 };
 
-// 获取可执行文件所在目录
+// 获取可执行文件所在目录（跨平台实现）
 inline std::string get_executable_directory() {
+#ifdef _WIN32
+    // Windows: 使用 GetModuleFileName 获取可执行文件路径
+    char buffer[MAX_PATH];
+    GetModuleFileNameA(NULL, buffer, MAX_PATH);
+    std::string path(buffer);
+
+    // 提取目录部分
+    size_t last_slash = path.find_last_of("\\/");
+    if (last_slash != std::string::npos) {
+        return path.substr(0, last_slash);
+    }
+    return "";
+#else
+    // Linux: 使用 /proc/self/exe 和 readlink 获取可执行文件路径
     char buffer[PATH_MAX];
     ssize_t len = readlink("/proc/self/exe", buffer, sizeof(buffer) - 1);
     if (len != -1) {
         buffer[len] = '\0';
         std::string path(buffer);
+
+        // 提取目录部分
         size_t last_slash = path.find_last_of('/');
         if (last_slash != std::string::npos) {
             return path.substr(0, last_slash);
         }
     }
     return "";
+#endif
 }
 
 // 封装 EmailServer 类的功能
@@ -78,7 +100,7 @@ public:
         try {
             py::object asyncio = py::module_::import("asyncio");
             py::object send_email_coroutine = email_server.attr("send_email")(recv, content, title);
-    
+
             asyncio.attr("run")(send_email_coroutine);
         } catch (const py::error_already_set &e) {
             throw EmailException("Python 错误: " + std::string(e.what()));
